@@ -1,21 +1,24 @@
 import React, { useState, useEffect } from 'react';
-import { firestore } from './firebase';
-import { collection, getDocs } from 'firebase/firestore';
+import axios from 'axios';
 
 function ResponseViewer() {
   const [responses, setResponses] = useState([]);
   const [selectedLocation, setSelectedLocation] = useState(null);
 
   useEffect(() => {
+    // Fetch responses from the backend API
     const fetchResponses = async () => {
-      const responseCollection = collection(firestore, "prayers");
-      const responseSnapshot = await getDocs(responseCollection);
-      const responseList = responseSnapshot.docs.map(doc => doc.data());
-      setResponses(responseList);
+      try {
+        const response = await axios.get('http://localhost:5000/api/submissions');
+        setResponses(response.data); // Assuming the API response is an array of response objects
+      } catch (error) {
+        console.error('Error fetching responses:', error);
+      }
     };
     fetchResponses();
   }, []);
 
+  // Group responses by location
   const groupedResponses = responses.reduce((acc, response) => {
     const { location } = response;
     if (!acc[location]) acc[location] = [];
