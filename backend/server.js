@@ -86,40 +86,67 @@ app.delete('/api/questions/:id', async (req, res) => {
 
 // API endpoint to get all submissions
 app.get('/api/submissions', async (req, res) => {
-    try {
-      const submissionsSnapshot = await db.collection('submissions').get();
-      const submissions = submissionsSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-      res.json(submissions);
-    } catch (error) {
-      console.error('Error fetching submissions:', error);
-      res.status(500).json({ error: 'Error fetching submissions' });
-    }
-  });
-  
-  // API endpoint to post a new submission
-  app.post('/api/submissions', async (req, res) => {
-    const { userId, answers, location } = req.body;
-  
-    if (!userId || !answers || !location) {
-      console.error('Missing required submission data');
-      return res.status(400).json({ message: 'Missing required submission data' });
-    }
-  
-    const submissionData = {
-      userId,
-      answers,
-      location,
-      submissionTime: admin.firestore.Timestamp.now(),
-    };
-  
-    try {
-      const newSubmission = await db.collection('submissions').add(submissionData);
-      res.json({ id: newSubmission.id, ...submissionData });
-    } catch (error) {
-      console.error('Error adding submission:', error);
-      res.status(500).json({ message: 'Failed to add submission' });
-    }
-  });
+  try {
+    const submissionsSnapshot = await db.collection('submissions').get();
+    const submissions = submissionsSnapshot.docs.map(doc => {
+      const data = doc.data();
+
+      // Ensure 'answers' is an array before calling .map
+      if (!Array.isArray(data.answers)) {
+        return {
+          id: doc.id,
+          userId: data.userId,
+          location: data.location,
+          answers: [],  // Empty array if answers is not valid
+          submissionTime: data.submissionTime ? data.submissionTime.toDate() : null
+        };
+      }
+
+      return {
+        id: doc.id,
+        userId: data.userId,
+        location: data.location,
+        answers: data.answers.map(answer => ({
+          questionText: answer.questionText,
+          answerText: answer.answerText
+        })),
+        submissionTime: data.submissionTime ? data.submissionTime.toDate() : null // Convert Firestore timestamp to JS Date
+      };
+    });
+    res.json(submissions);
+  } catch (error) {
+    console.error('Error fetching submissions:', error);
+    res.status(500).json({ error: 'Error fetching submissions' });
+  }
+});
+
+
+// API endpoint to post a new submission
+app.post('/api/submissions', async (req, res) => {
+  const { userId, answers, location } = req.body;
+
+  if (!userId || !answers || !location) {
+    console.error('Missing required submission data');
+    return res.status(400).json({ message: 'Missing required submission data' });
+  }
+
+  const submissionData = {
+    userId,
+    answers, // Contains both questionText and answerText
+    location,
+    submissionTime: admin.firestore.Timestamp.now(),
+  };
+
+  try {
+    const newSubmission = await db.collection('submissions').add(submissionData);
+    res.json({ id: newSubmission.id, ...submissionData });
+  } catch (error) {
+    console.error('Error adding submission:', error);
+    res.status(500).json({ message: 'Failed to add submission' });
+  }
+});
+
+
   
 
 const PORT = 5000;

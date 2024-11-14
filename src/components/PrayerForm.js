@@ -4,7 +4,6 @@ import axios from 'axios';
 function PrayerForm() {
   const [questions, setQuestions] = useState([]); // Store questions fetched from API
   const [answers, setAnswers] = useState({}); // Store user's answers
-  const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0); // Track current question
   const [userLocation, setUserLocation] = useState(''); // Store user's location
   const [loading, setLoading] = useState(true); // Loading state for questions
 
@@ -20,16 +19,6 @@ function PrayerForm() {
       }
     };
     fetchQuestions();
-
-    // Request user's location
-    navigator.geolocation.getCurrentPosition(
-      (position) => {
-        setUserLocation(`${position.coords.latitude}, ${position.coords.longitude}`);
-      },
-      (error) => {
-        console.error('Error fetching location:', error);
-      }
-    );
   }, []);
 
   const handleAnswerChange = (e) => {
@@ -43,15 +32,20 @@ function PrayerForm() {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    // Prepare data to submit answers and location
+    // Convert answers to an array of objects with questionText and answerText
+    const formattedAnswers = questions.map((question) => ({
+      questionText: question.questionText,
+      answerText: answers[question.id] || '', // Get the answer based on question ID
+    }));
+
     const submissionData = {
       userId: 'user123', // Example user ID, can be dynamically set
-      answers,           // Collect all answers
-      location: userLocation, // Include user's location
+      answers: formattedAnswers,
+      location: userLocation,
     };
 
     try {
-      const response = await axios.post('http://localhost:5000/api/submissions', submissionData);
+      await axios.post('http://localhost:5000/api/submissions', submissionData);
       alert('Your responses have been submitted successfully!');
     } catch (error) {
       console.error('Error submitting responses:', error);
@@ -59,23 +53,8 @@ function PrayerForm() {
     }
   };
 
-  const handleNextQuestion = () => {
-    if (currentQuestionIndex < questions.length - 1) {
-      setCurrentQuestionIndex(currentQuestionIndex + 1);
-    } else {
-      alert('You have answered all the questions!');
-    }
-  };
-
-  if (loading) {
-    return <div>Loading questions...</div>;
-  }
-
-  if (questions.length === 0) {
-    return <div>No active questions available at the moment.</div>;
-  }
-
-  const currentQuestion = questions[currentQuestionIndex];
+  if (loading) return <div>Loading questions...</div>;
+  if (questions.length === 0) return <div>No active questions available at the moment.</div>;
 
   return (
     <div className="max-w-lg mx-auto mt-10 bg-white p-6 rounded-lg shadow-md">
@@ -83,38 +62,40 @@ function PrayerForm() {
 
       <form onSubmit={handleSubmit}>
         <div className="mb-4">
-          <label className="block text-lg font-medium mb-2" htmlFor="answer">
-            {currentQuestion ? currentQuestion.questionText : 'Loading question...'}
+          <label className="block text-lg font-medium mb-2" htmlFor="location">
+            Location
           </label>
           <input
             type="text"
-            name={`question_${currentQuestion ? currentQuestion.id : ''}`} // Dynamic question name
-            value={answers[`question_${currentQuestion ? currentQuestion.id : ''}`] || ''}
-            onChange={handleAnswerChange}
+            name="location"
+            value={userLocation}
+            onChange={(e) => setUserLocation(e.target.value)}
             className="w-full px-4 py-2 border rounded-lg"
-            placeholder="Your answer..."
+            placeholder="Your location..."
             required
           />
         </div>
 
-        <div className="flex justify-between items-center">
-          {currentQuestionIndex < questions.length - 1 ? (
-            <button
-              type="button"
-              onClick={handleNextQuestion}
-              className="px-4 py-2 bg-indigo-600 text-white rounded-md"
-            >
-              Next Question
-            </button>
-          ) : (
-            <button
-              type="submit"
-              className="px-4 py-2 bg-green-600 text-white rounded-md"
-            >
-              Submit Responses
-            </button>
-          )}
-        </div>
+        {questions.map((question) => (
+          <div key={question.id} className="mb-4">
+            <label className="block text-lg font-medium mb-2" htmlFor={question.id}>
+              {question.questionText}
+            </label>
+            <input
+              type="text"
+              name={question.id}
+              value={answers[question.id] || ''}
+              onChange={handleAnswerChange}
+              className="w-full px-4 py-2 border rounded-lg"
+              placeholder="Your answer..."
+              required
+            />
+          </div>
+        ))}
+
+        <button type="submit" className="px-4 py-2 bg-green-600 text-white rounded-md">
+          Submit Responses
+        </button>
       </form>
     </div>
   );

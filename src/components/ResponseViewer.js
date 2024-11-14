@@ -49,9 +49,13 @@ function ResponseViewer() {
           <ul className="space-y-2 mt-2">
             {groupedResponses[selectedLocation].map((response, index) => (
               <li key={index} className="bg-gray-50 p-3 rounded shadow">
-                <p><strong>Name:</strong> {response.userName}</p>
-                <p><strong>Prayer Content:</strong> {response.prayerContent}</p>
-                <p><strong>Prayer Request:</strong> {response.prayerRequest}</p>
+                <p><strong>User ID:</strong> {response.userId}</p>
+                <p><strong>Location:</strong> {response.location}</p>
+                {response.answers.map((answer, idx) => (
+                  <p key={idx}>
+                    <strong>{answer.questionText}:</strong> {answer.answerText}
+                  </p>
+                ))}
               </li>
             ))}
           </ul>
