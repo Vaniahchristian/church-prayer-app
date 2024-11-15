@@ -21,11 +21,7 @@ function App() {
           </Routes>
         </main>
 
-        <footer className="bg-indigo-600 text-white py-2 text-center">
-          <p className="text-sm">
-            &copy; {new Date().getFullYear()} Church Prayer App. All rights reserved.
-          </p>
-        </footer>
+       
       </div>
     </Router>
   );

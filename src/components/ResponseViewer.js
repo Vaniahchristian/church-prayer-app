@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import DataTable from 'react-data-table-component';
+import * as XLSX from 'xlsx'; // Import xlsx library
 
 function ResponseViewer() {
   const [responses, setResponses] = useState([]);
@@ -38,9 +39,33 @@ function ResponseViewer() {
     })),
   ];
 
+  // Prepare data for Excel export
+  const handleExportToExcel = () => {
+    // Transform responses into a tabular format
+    const excelData = responses.map((response) => {
+      const row = {
+        'User ID': response.userId,
+        Location: response.location,
+      };
+      uniqueQuestions.forEach((question) => {
+        const answerObj = response.answers.find((answer) => answer.questionText === question);
+        row[question] = answerObj ? answerObj.answerText : 'N/A';
+      });
+      return row;
+    });
+
+    // Create a worksheet and workbook
+    const worksheet = XLSX.utils.json_to_sheet(excelData);
+    const workbook = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(workbook, worksheet, 'Responses');
+
+    // Generate and download the Excel file
+    XLSX.writeFile(workbook, 'responses.xlsx');
+  };
+
   return (
     <div>
-      <div className="mb-4">
+      <div className="mb-4 flex space-x-4">
         <button
           onClick={() => setViewMode('list')}
           className={`px-4 py-2 ${viewMode === 'list' ? 'bg-indigo-600 text-white' : 'bg-gray-200'} rounded`}
@@ -49,9 +74,15 @@ function ResponseViewer() {
         </button>
         <button
           onClick={() => setViewMode('table')}
-          className={`px-4 py-2 ml-2 ${viewMode === 'table' ? 'bg-indigo-600 text-white' : 'bg-gray-200'} rounded`}
+          className={`px-4 py-2 ${viewMode === 'table' ? 'bg-indigo-600 text-white' : 'bg-gray-200'} rounded`}
         >
           Table View
+        </button>
+        <button
+          onClick={handleExportToExcel}
+          className="px-4 py-2 bg-green-600 text-white rounded"
+        >
+          Export to Excel
         </button>
       </div>
 
