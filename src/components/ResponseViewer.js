@@ -1,18 +1,17 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import DataTable from 'react-data-table-component';
-import * as XLSX from 'xlsx'; // Import xlsx library
+import * as XLSX from 'xlsx';
 
 function ResponseViewer() {
   const [responses, setResponses] = useState([]);
   const [viewMode, setViewMode] = useState('list'); // 'list' or 'table'
 
   useEffect(() => {
-    // Fetch responses from the backend API
     const fetchResponses = async () => {
       try {
         const response = await axios.get('http://localhost:5000/api/submissions');
-        setResponses(response.data); // Assuming the API response is an array of response objects
+        setResponses(response.data);
       } catch (error) {
         console.error('Error fetching responses:', error);
       }
@@ -33,15 +32,16 @@ function ResponseViewer() {
       name: question,
       selector: (row) => {
         const answerObj = row.answers.find((answer) => answer.questionText === question);
-        return answerObj ? answerObj.answerText : 'N/A'; // Display 'N/A' if the question wasn't answered
+        return answerObj ? answerObj.answerText : 'N/A';
       },
       sortable: true,
+      wrap: true, // Wrap text within columns for better display
+      hide: 'sm', // Optional: Hide certain columns on smaller screens
     })),
   ];
 
   // Prepare data for Excel export
   const handleExportToExcel = () => {
-    // Transform responses into a tabular format
     const excelData = responses.map((response) => {
       const row = {
         'User ID': response.userId,
@@ -54,17 +54,14 @@ function ResponseViewer() {
       return row;
     });
 
-    // Create a worksheet and workbook
     const worksheet = XLSX.utils.json_to_sheet(excelData);
     const workbook = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(workbook, worksheet, 'Responses');
-
-    // Generate and download the Excel file
     XLSX.writeFile(workbook, 'responses.xlsx');
   };
 
   return (
-    <div>
+    <div className="p-4">
       <div className="mb-4 flex space-x-4">
         <button
           onClick={() => setViewMode('list')}
@@ -87,12 +84,30 @@ function ResponseViewer() {
       </div>
 
       {viewMode === 'table' && (
-        <DataTable
-          title="Responses Table"
-          columns={columns}
-          data={responses}
-          pagination
-        />
+        <div className="overflow-x-auto">
+          <DataTable
+            title="Responses Table"
+            columns={columns}
+            data={responses}
+            pagination
+            responsive
+            highlightOnHover
+            customStyles={{
+              headCells: {
+                style: {
+                  fontSize: '0.9rem',
+                  '@screen sm': { fontSize: '1rem' },
+                },
+              },
+              cells: {
+                style: {
+                  fontSize: '0.8rem',
+                  '@screen sm': { fontSize: '0.9rem' },
+                },
+              },
+            }}
+          />
+        </div>
       )}
 
       {viewMode === 'list' && (

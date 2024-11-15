@@ -6,13 +6,13 @@ function AdminDashboard() {
   const [activeSection, setActiveSection] = useState('questions'); // Tracks the active section
 
   return (
-    <div className="min-h-screen bg-gray-100 p-8">
+    <div className="min-h-screen bg-gray-100 p-8 pb-72">
       <h1 className="text-3xl font-bold text-center text-indigo-600 mb-8">
         Church Admin Dashboard
       </h1>
 
       {/* Navigation Tabs */}
-      <div className="flex justify-center space-x-6 mb-8">
+      <div className="flex justify-center space-x-6 mb-8 ">
         <button
           onClick={() => setActiveSection('questions')}
           className={`px-6 py-2 rounded-lg font-semibold ${
