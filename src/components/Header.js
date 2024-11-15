@@ -4,7 +4,7 @@ import { Link } from 'react-router-dom';
 function Header() {
   return (
     <header className="bg-indigo-600 text-white py-4 shadow-md">
-      <h1 className="text-center text-3xl font-semibold">Church Prayer App</h1>
+      
       
 
       <nav className="mt-4 text-center">

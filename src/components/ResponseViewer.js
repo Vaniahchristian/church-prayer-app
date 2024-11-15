@@ -1,9 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
+import DataTable from 'react-data-table-component';
 
 function ResponseViewer() {
   const [responses, setResponses] = useState([]);
-  const [selectedLocation, setSelectedLocation] = useState(null);
+  const [viewMode, setViewMode] = useState('list'); // 'list' or 'table'
 
   useEffect(() => {
     // Fetch responses from the backend API
@@ -18,48 +19,65 @@ function ResponseViewer() {
     fetchResponses();
   }, []);
 
-  // Group responses by location
-  const groupedResponses = responses.reduce((acc, response) => {
-    const { location } = response;
-    if (!acc[location]) acc[location] = [];
-    acc[location].push(response);
-    return acc;
-  }, {});
+  // Extract unique questions to form columns
+  const uniqueQuestions = Array.from(
+    new Set(responses.flatMap((response) => response.answers.map((answer) => answer.questionText)))
+  );
+
+  // Define columns with dynamic question columns
+  const columns = [
+    { name: 'User ID', selector: (row) => row.userId, sortable: true },
+    { name: 'Location', selector: (row) => row.location, sortable: true },
+    ...uniqueQuestions.map((question) => ({
+      name: question,
+      selector: (row) => {
+        const answerObj = row.answers.find((answer) => answer.questionText === question);
+        return answerObj ? answerObj.answerText : 'N/A'; // Display 'N/A' if the question wasn't answered
+      },
+      sortable: true,
+    })),
+  ];
 
   return (
     <div>
-      <ul className="space-y-4">
-        {Object.keys(groupedResponses).map((location) => (
-          <li key={location}>
-            <button
-              onClick={() => setSelectedLocation(location)}
-              className="text-indigo-600 underline"
-            >
-              {location} ({groupedResponses[location].length} responses)
-            </button>
-          </li>
-        ))}
-      </ul>
+      <div className="mb-4">
+        <button
+          onClick={() => setViewMode('list')}
+          className={`px-4 py-2 ${viewMode === 'list' ? 'bg-indigo-600 text-white' : 'bg-gray-200'} rounded`}
+        >
+          List View
+        </button>
+        <button
+          onClick={() => setViewMode('table')}
+          className={`px-4 py-2 ml-2 ${viewMode === 'table' ? 'bg-indigo-600 text-white' : 'bg-gray-200'} rounded`}
+        >
+          Table View
+        </button>
+      </div>
 
-      {selectedLocation && (
-        <div className="mt-4">
-          <h3 className="text-lg font-semibold text-indigo-600">
-            Responses from {selectedLocation}
-          </h3>
-          <ul className="space-y-2 mt-2">
-            {groupedResponses[selectedLocation].map((response, index) => (
-              <li key={index} className="bg-gray-50 p-3 rounded shadow">
-                <p><strong>User ID:</strong> {response.userId}</p>
-                <p><strong>Location:</strong> {response.location}</p>
-                {response.answers.map((answer, idx) => (
-                  <p key={idx}>
-                    <strong>{answer.questionText}:</strong> {answer.answerText}
-                  </p>
-                ))}
-              </li>
-            ))}
-          </ul>
-        </div>
+      {viewMode === 'table' && (
+        <DataTable
+          title="Responses Table"
+          columns={columns}
+          data={responses}
+          pagination
+        />
+      )}
+
+      {viewMode === 'list' && (
+        <ul className="space-y-4">
+          {responses.map((response, index) => (
+            <li key={index} className="bg-gray-50 p-3 rounded shadow">
+              <p><strong>User ID:</strong> {response.userId}</p>
+              <p><strong>Location:</strong> {response.location}</p>
+              {response.answers.map((answer, idx) => (
+                <p key={idx}>
+                  <strong>{answer.questionText}:</strong> {answer.answerText}
+                </p>
+              ))}
+            </li>
+          ))}
+        </ul>
       )}
     </div>
   );
