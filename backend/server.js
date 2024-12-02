@@ -146,8 +146,25 @@ app.post('/api/submissions', async (req, res) => {
   }
 });
 
+// API endpoint for deleting a submission
+app.delete('/api/submissions/:id', async (req, res) => {
+  const { id } = req.params;
 
-  
+  try {
+    const submissionRef = db.collection('submissions').doc(id);
+    const doc = await submissionRef.get();
+
+    if (!doc.exists) {
+      return res.status(404).json({ message: 'Submission not found' });
+    }
+
+    await submissionRef.delete();
+    res.json({ message: 'Submission deleted successfully' });
+  } catch (error) {
+    console.error("Error deleting submission:", error);
+    res.status(500).json({ message: 'Failed to delete submission' });
+  }
+});
 
 const PORT = 5000;
 app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
