@@ -12,7 +12,7 @@ function PrayerForm() {
   useEffect(() => {
     const fetchQuestions = async () => {
       try {
-        const response = await axios.get('http://localhost:5000/api/questions');
+        const response = await axios.get('https://church-prayer-app.onrender.com/api/questions');
         setQuestions(response.data);
         setLoading(false);
       } catch (error) {
@@ -42,7 +42,7 @@ function PrayerForm() {
       location: userLocation,
     };
     try {
-      await axios.post('http://localhost:5000/api/submissions', submissionData);
+      await axios.post('https://church-prayer-app.onrender.com/api/submissions', submissionData);
       alert('Your responses have been submitted successfully!');
     } catch (error) {
       console.error('Error submitting responses:', error);

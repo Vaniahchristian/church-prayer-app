@@ -10,7 +10,7 @@ function ResponseViewer() {
   useEffect(() => {
     const fetchResponses = async () => {
       try {
-        const response = await axios.get('http://localhost:5000/api/submissions');
+        const response = await axios.get('https://church-prayer-app.onrender.com/api/submissions');
         setResponses(response.data);
       } catch (error) {
         console.error('Error fetching responses:', error);

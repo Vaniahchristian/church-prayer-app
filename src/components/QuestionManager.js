@@ -9,7 +9,7 @@ function QuestionManager() {
   useEffect(() => {
     const fetchQuestions = async () => {
       try {
-        const response = await axios.get('http://localhost:5000/api/questions');
+        const response = await axios.get('https://church-prayer-app.onrender.com/api/questions');
         setQuestions(response.data);
       } catch (error) {
         console.error('Error fetching questions:', error);
@@ -23,7 +23,7 @@ function QuestionManager() {
     if (newQuestion.trim() === "") return;
 
     try {
-      const response = await axios.post('http://localhost:5000/api/questions', {
+      const response = await axios.post('https://church-prayer-app.onrender.com/api/questions', {
         questionText: newQuestion,
         status: 'active', // Example status, can be modified as needed
       });
@@ -37,7 +37,7 @@ function QuestionManager() {
   // Delete a question
   const deleteQuestion = async (id) => {
     try {
-      await axios.delete(`http://localhost:5000/api/questions/${id}`);
+      await axios.delete(`https://church-prayer-app.onrender.com/api/questions/${id}`);
       setQuestions(questions.filter((q) => q.id !== id));
     } catch (error) {
       console.error('Error deleting question:', error);
