@@ -60,6 +60,16 @@ function ResponseViewer() {
     XLSX.writeFile(workbook, 'responses.xlsx');
   };
 
+  // Function to handle deletion of a response
+  const handleDeleteResponse = async (userId) => {
+    try {
+      await axios.delete(`https://church-prayer-app.onrender.com/api/submissions/${userId}`);
+      setResponses(responses.filter(response => response.userId !== userId));
+    } catch (error) {
+      console.error('Error deleting response:', error);
+    }
+  };
+
   return (
     <div className="p-4">
       <div className="mb-4 flex space-x-4">
@@ -121,6 +131,12 @@ function ResponseViewer() {
                   <strong>{answer.questionText}:</strong> {answer.answerText}
                 </p>
               ))}
+              <button
+                onClick={() => handleDeleteResponse(response.userId)}
+                className="mt-2 px-4 py-2 bg-red-600 text-white rounded"
+              >
+                Delete
+              </button>
             </li>
           ))}
         </ul>
