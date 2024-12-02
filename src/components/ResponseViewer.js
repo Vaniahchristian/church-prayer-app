@@ -61,10 +61,11 @@ function ResponseViewer() {
   };
 
   // Function to handle deletion of a response
-  const handleDeleteResponse = async (userId) => {
+  const handleDeleteResponse = async (submissionId) => {
+    console.log('Attempting to delete response with submissionId:', submissionId);
     try {
-      await axios.delete(`https://church-prayer-app.onrender.com/api/submissions/${userId}`);
-      setResponses(responses.filter(response => response.userId !== userId));
+      await axios.delete(`https://church-prayer-app.onrender.com/api/submissions/${submissionId}`);
+      setResponses(responses.filter(response => response.id !== submissionId));
     } catch (error) {
       console.error('Error deleting response:', error);
     }
@@ -132,7 +133,7 @@ function ResponseViewer() {
                 </p>
               ))}
               <button
-                onClick={() => handleDeleteResponse(response.userId)}
+                onClick={() => handleDeleteResponse(response.id)}
                 className="mt-2 px-4 py-2 bg-red-600 text-white rounded"
               >
                 Delete
